@@ -15,6 +15,12 @@ static Type lerp(const Type a, const Type b, float t) {
 	return (a * (1.f - t)) + (b * t);
 }
 
+/* Clamp */
+template<typename Type>
+static Type clamp(const Type val, const Type min, const Type max) {
+	return std::max(std::min(val, max), min);
+}
+
 /* Vec3 Class */
 class Vec3 {
 public:
@@ -119,7 +125,8 @@ public:
 		return Matrix(m[0][0], m[1][0], m[2][0], m[3][0],
 					  m[0][1], m[1][1], m[2][1], m[3][1],
 					  m[0][2], m[1][2], m[2][2], m[3][2],
-					  m[0][3], m[1][3], m[2][3], m[3][3]);
+					  m[0][3], m[1][3], m[2][3], m[3][3]
+		);
 	}
 
 	static Matrix translate(const Vec3& v) {
@@ -185,13 +192,15 @@ public:
 		return Vec4(v.x * a[0] + v.y * a[1] + v.z * a[2] + v.w + a[3],
 					v.x * a[4] + v.y * a[5] + v.z * a[6] + v.w + a[7],
 					v.x * a[8] + v.y * a[9] + v.z * a[10] + v.w + a[11],
-					v.x * a[12] + v.y * a[13] + v.z * a[14] + v.w + a[15]);
+					v.x * a[12] + v.y * a[13] + v.z * a[14] + v.w + a[15]
+		);
 	}
 
 	Vec3 mulPoint(const Vec3& v) {
 		return Vec3((v.x * a[0] + v.y * a[1] + v.z * a[2]) + a[3],
 					(v.x * a[4] + v.y * a[5] + v.z * a[6]) + a[7],
-					(v.x * a[8] + v.y * a[9] + v.z * a[10]) + a[11]);
+					(v.x * a[8] + v.y * a[9] + v.z * a[10]) + a[11]
+		);
 	}
 
 	Matrix mul(const Matrix& matrix) const {
@@ -220,7 +229,7 @@ public:
 
 	Matrix operator*(const Matrix& matrix) { return mul(matrix); }
 
-	Matrix invert() {
+	Matrix invert() const {
 		Matrix inv;
 		inv[0] = a[5] * a[10] * a[15] - a[5] * a[11] * a[14] - a[9] * a[6] * a[15] + a[9] * a[7] * a[14] + a[13] * a[6] * a[11] - a[13] * a[7] * a[10];
 		inv[4] = -a[4] * a[10] * a[15] + a[4] * a[11] * a[14] + a[8] * a[6] * a[15] - a[8] * a[7] * a[14] - a[12] * a[6] * a[11] + a[12] * a[7] * a[10];
@@ -255,3 +264,100 @@ public:
 };
 
 /* Quaternion Class */
+class Quaternion {
+public:
+	union {
+		struct { float a, b, c, d; };
+		float q[4];
+	};
+
+	Quaternion(float _a = 0.f, float _b = 0.f, float _c = 0.f, float _d = 0.f) : a(_a), b(_b), c(_c), d(_d) {}
+
+	void conjugate() { a = -a; b = -b; c = -c; }
+	float magnitude() const { return sqrtf(SQ(a) + SQ(b) + SQ(c) + SQ(d)); }
+
+	void normalize() {
+		float invMag = 1.f / sqrtf(SQ(a) + SQ(b) + SQ(c) + SQ(d));
+		a *= invMag; b *= invMag; c *= invMag; d *= invMag;
+	}
+
+	void inverse() {
+		conjugate();
+		normalize();
+	}
+
+	Quaternion operator*(Quaternion q2) {
+		return Quaternion((d * q2.a + a * q2.d + b * q2.c - c * q2.b),  // ai comp.
+						  (d * q2.b - a * q2.c + b * q2.d + c * q2.a),  // bj comp.
+						  (d * q2.b - a * q2.c + b * q2.d + c * q2.a),  // ck comp.
+						  (d * q2.d - a * q2.a - b * q2.b - c * q2.c)   // d comp.
+		);
+	}
+
+	Quaternion operator-() { return Quaternion(-a, -b, -c, -d); }
+
+	Matrix toMatrix() const {
+		float aa = a * a, ab = a * b, ac = a * c;
+		float bb = b * b, bc = b * c, cc = c * c;
+		float da = d * a, db = d * b, dc = d * c;
+
+		Matrix m;
+		m[0] = 1 - 2 * (bb + cc); m[1] = 2 * (ab - dc); m[2] = 2 * (ac + db); m[3] = 0;
+		m[4] = 2 * (ab + dc); m[5] = 1 - 2 * (aa + cc); m[6] = 2 * (bc - da); m[7] = 0;
+		m[8] = 2 * (ac - db); m[9] = 2 * (bc + da); m[10] = 1 - 2 * (aa + bb); m[11] = 0;
+		m[12] = m[13] = m[14] = 0; m[15] = 1;
+		return m;
+	}
+
+	void rotatePoint(Vec3& p, float theta, Vec3& v) {
+		// q = c + vxsi + vysj + vzsk --> c = cos(theta/2), s = sin(theta/2)
+		// pq = 0 + pxi + pyj + pzk
+		// pq' = q pq q'
+
+		Quaternion q, pq, qinv;
+		q.a = v.x * sinf(0.5f * theta);
+		q.b = v.y * sinf(0.5f * theta);
+		q.c = v.z * sinf(0.5f * theta);
+		q.d = cosf(0.5f * theta);
+
+		pq.a = p.x; pq.b = p.y; pq.c = p.z; pq.d = 0.f;
+
+		qinv = q;
+		qinv.inverse();
+
+		q = q * pq;
+		q = q * qinv;
+
+		a = q.a; b = q.b; c = q.c; d = q.d;
+	}
+
+	static Quaternion slerp(Quaternion& q1, Quaternion& q2, float t) {
+		// q1.q2 = d1.d2 + a1.a2 + b1.b2 + c1.c2
+		// theta = acos(q1.q2)
+		// qInterpolated = sin(theta*(1-t))/sin(theta)q1 + sin(theta*t)/sin(theta)q2
+
+		Quaternion interpolated;
+		float dot = q1.d * q2.d + q1.a * q2.a + q1.b * q2.b + q1.c * q2.c;
+		
+		Quaternion q11 = dot < 0 ? -q1 : q1;
+		dot = dot > 0 ? dot : -dot;
+
+		float theta = acosf(clamp(dot, -1.f, 1.f));
+		if (theta == 0.f) return q1;
+
+		float a = sinf(theta * (1.f - t));
+		float b = sinf(theta * t);
+		float d = sinf(theta);
+
+		float coeff1 = a / d;
+		float coeff2 = b / d;
+
+		interpolated.a = coeff1 * q11.a + coeff2 * q2.a;
+		interpolated.b = coeff1 * q11.b + coeff2 * q2.b;
+		interpolated.c = coeff1 * q11.c + coeff2 * q2.c;
+		interpolated.d = coeff1 * q11.d + coeff2 * q2.d;
+		
+		interpolated.normalize();
+		return interpolated;
+	}
+};
