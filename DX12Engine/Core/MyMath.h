@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #define USE_MATH_DEFINES
 #define SQ(x) (x * x)
@@ -188,6 +189,47 @@ public:
 
 	static Matrix rotateXYZ(float x, float y, float z) {
 		return Matrix::rotateX(x) * Matrix::rotateY(y) * Matrix::rotateZ(z);
+	}
+
+	static Matrix perspective(float thetaDegrees, float aspect, float zNear, float zFar) {
+		float fov = 1.f / tanf(thetaDegrees * 0.5f * std::numbers::pi_v<float> / 180.0f);
+		float zNorm = 1.f / (zFar - zNear);
+
+		Matrix pers;
+		memset(pers.m, 0, 16 * sizeof(float));
+
+		pers[0] = fov / aspect;
+		pers[5] = fov;
+		pers[10] = zFar * zNorm;
+		pers[11] = -(zFar * zNear) * zNorm;
+		pers[14] = 1.f;
+
+		return pers;
+	}
+
+	static Matrix lookAt(const Vec3& from, const Vec3& to, const Vec3& up) {
+		Matrix look;
+		Vec3 dir = (to - from).normalize();
+		Vec3 right = Cross(up, dir).normalize();
+		Vec3 up1 = Cross(dir, right);
+
+		look.m[0][0] = right.x;
+		look.m[0][1] = right.y;
+		look.m[0][2] = right.z;
+		look.m[0][3] = -Dot(from, right);
+
+		look.m[1][0] = up1.x;
+		look.m[1][1] = up1.y;
+		look.m[1][2] = up1.z;
+		look.m[1][3] = -Dot(from, up1);
+
+		look.m[2][0] = dir.x;
+		look.m[2][1] = dir.y;
+		look.m[2][2] = dir.z;
+		look.m[2][3] = -Dot(from, dir);
+
+		look.m[3][3] = 1;
+		return look;
 	}
 
 	Vec4 mul(const Vec4& v) {
