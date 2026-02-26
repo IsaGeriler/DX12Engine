@@ -88,7 +88,9 @@ public:
 	// Methods
 	float length() const { return sqrtf(SQ(x) + SQ(y) + SQ(z)); }
 	float lengthSquared() const { return SQ(x) + SQ(y) + SQ(z); }
+
 	void divideW() const { float invW = 1.f / w; x* invW; y* invW; z* invW; }
+
 	void normalize() { float l = 1.f / sqrtf(SQ(x) + SQ(y) + SQ(z)); x *= l; y *= l; z*= l; }
 	float normalizeAndGetLength() { float l = sqrtf(SQ(x) + SQ(y) + SQ(z)); float invL = 1.f / l; x *= invL; y *= invL; z *= invL; return l; }
 };
@@ -360,4 +362,41 @@ public:
 		interpolated.normalize();
 		return interpolated;
 	}
+};
+
+class ShadingFrame {
+	// Given a unit vector n, find axis not colinear to n:
+	// u' { (1 0 0)T if n != (1 0 0)T
+	//		(0 1 0)T otherwise
+	// 
+	// u = (n x u') / |(n x u')|
+	// v = n x u
+public:
+	Vec3 u;  // tangent vector (normalized)
+	Vec3 v;  // binormal vector
+	Vec3 w;  // normal vector (normalized)
+
+	void fromVector(const Vec3& n) {
+		// Gram-Schmidt Orthonormalization
+		w = n.normalize();
+
+		if (fabsf(w.x) > fabsf(w.y)) {
+			float l = 1.f / sqrtf(w.x * w.x + w.z * w.z);
+			u = Vec3(w.z * l, 0.f, -w.x * l);
+		}
+		else {
+			float l = 1.f / sqrtf(w.y * w.y + w.z * w.z);
+			u = Vec3(0.f, w.z * l, -w.y * l);
+		}
+		v = Cross(u, w);
+	}
+
+	void fromTangentVector(const Vec3& n, const Vec3& t) {
+		w = n.normalize();
+		u = t.normalize();
+		v = Cross(u, w);
+	}
+
+	Vec3 toLocal(const Vec3& vec) const { return Vec3(Dot(u, vec), Dot(v, vec), Dot(w, vec)); }
+	Vec3 toWorld(const Vec3& vec) const { return ((u * vec.x) + (v * vec.y) + (w * vec.z)); }
 };
