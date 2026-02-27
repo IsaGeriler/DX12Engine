@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,11 +133,34 @@
   <ItemGroup>
     <ClCompile Include="App\main.cpp" />
     <ClCompile Include="Platform\Window.cpp" />
+    <ClCompile Include="ThirdParty\imgui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="ThirdParty\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\MyMath.h" />
     <ClInclude Include="Graphics\DX12Core.h" />
     <ClInclude Include="Platform\Window.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod.hpp" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_codec.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_common.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_dsp.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_dsp_effects.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_errors.h" />
+    <ClInclude Include="ThirdParty\FMOD\fmod_output.h" />
+    <ClInclude Include="ThirdParty\imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="ThirdParty\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="ThirdParty\imgui\imconfig.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
