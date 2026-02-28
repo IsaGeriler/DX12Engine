@@ -297,7 +297,9 @@ public:
 		
 		float det = a[0] * inv[0] + a[1] * inv[4] + a[2] * inv[8] + a[3] * inv[12];
 		if (det == 0) {
-			exit(0);
+			// exit(0);
+			inv.identity();
+			return inv;
 		}
 		det = 1.0 / det;
 		for (int i = 0; i < 16; i++) {
@@ -441,4 +443,25 @@ public:
 
 	Vec3 toLocal(const Vec3& vec) const { return Vec3(Dot(u, vec), Dot(v, vec), Dot(w, vec)); }
 	Vec3 toWorld(const Vec3& vec) const { return ((u * vec.x) + (v * vec.y) + (w * vec.z)); }
+};
+
+/* Colour Class */
+class Colour {
+public:
+	union {
+		struct { float r, g, b, a; };
+		float c[4];
+	};
+
+	Colour(float _r = 0.f, float _g = 0.f, float _b = 0.f, float _a = 1.f) : r(_r), g(_g), b(_b), a(_a) {}
+	Colour(unsigned char _r = 0, unsigned char _g = 0, unsigned char _b = 0, unsigned char _a = 255) : r(_r / 255.f), g(_g / 255.f), b(_b / 255.f), a(_a / 255.f) {}
+
+	// Operator Overloading
+	Colour operator+(const Colour& colour) const { return Colour(r + colour.r, g + colour.g, b + colour.b, a + colour.a); }
+	Colour operator-(const Colour& colour) const { return Colour(r - colour.r, g - colour.g, b - colour.b, a - colour.a); }
+	Colour operator*(const Colour& colour) const { return Colour(r * colour.r, g * colour.g, b * colour.b, a * colour.a); }
+	Colour operator/(const Colour& colour) const { return Colour(r / colour.r, g / colour.g, b / colour.b, a / colour.a); }
+
+	Colour operator*(const float scalar) const { return Colour(r * scalar, g * scalar, b * scalar, a * scalar); }
+	Colour operator/(const float scalar) const { return Colour(r / scalar, g / scalar, b / scalar, a / scalar); }
 };

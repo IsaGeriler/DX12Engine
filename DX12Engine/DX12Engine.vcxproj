@@ -144,6 +144,9 @@
   <ItemGroup>
     <ClInclude Include="Core\MyMath.h" />
     <ClInclude Include="Graphics\DX12Core.h" />
+    <ClInclude Include="Graphics\Mesh.h" />
+    <ClInclude Include="Graphics\Shader.h" />
+    <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Platform\Window.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod.hpp" />

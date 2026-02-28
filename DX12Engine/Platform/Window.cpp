@@ -2,9 +2,8 @@
 
 Window* window;
 
-extern "C" {
-	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-}
+// Force the application to run on the dedicated NVIDIA GPU in systems with NVIDIA Optimus technology
+extern "C" { _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; }
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
