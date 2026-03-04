@@ -1,3 +1,3 @@
 # DX12Engine
-## Current State of the Engine (W.I.P.)
-<img width="1514" height="1200" alt="Screenshot 2026-02-27 151256" src="https://github.com/user-attachments/assets/ace01cde-12bd-483f-a2a5-2d61db918a71" />
+## Current State of the Engine (WIP)
+<img width="1514" height="1200" alt="Screenshot 2026-03-04 135727" src="https://github.com/user-attachments/assets/e05aecd4-5ea2-4dc0-9e5a-a064e5ae0ed1" />
