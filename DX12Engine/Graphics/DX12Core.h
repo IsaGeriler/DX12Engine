@@ -80,6 +80,9 @@ public:
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT scissorRect;
 
+	// Root Signature Member Variable
+	ID3D12RootSignature* rootSignature;
+
 	void initialize(HWND hwnd, int _width, int _height) {
 		// Enumarate Adapters
 		IDXGIFactory6* factory = NULL;
@@ -96,7 +99,7 @@ public:
 		}
 
 		// Find the best adapter
-		long long maxVideoMemory = 0;
+		unsigned long long maxVideoMemory = 0;
 		int useAdapterIndex = 0;
 		for (int i = 0; i < adapters.size(); i++) {
 			DXGI_ADAPTER_DESC desc;
@@ -223,6 +226,17 @@ public:
 		scissorRect.right = _width;
 		scissorRect.bottom = _height;
 
+		// Create Root Signature (allows drawing)
+		ID3DBlob* serialized;
+		ID3DBlob* error;
+
+		D3D12_ROOT_SIGNATURE_DESC desc = {};
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		
+		D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &serialized, &error);
+		device->CreateRootSignature(0, serialized->GetBufferPointer(), serialized -> GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+		serialized->Release();
+
 		// Do more stuff with factory, once done - release...
 		factory->Release();
 	}
@@ -263,7 +277,12 @@ public:
 		color[0] = 1.0; color[1] = 0.0; color[2] = 0.0; color[3] = 1.0;
 		getCommandList()->ClearRenderTargetView(renderTargetViewHandle, color, 0, NULL);
 		getCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, NULL);
+	}
 
+	void beginRenderPass() {
+		getCommandList()->RSSetViewports(1, &viewport);
+		getCommandList()->RSSetScissorRects(1, &scissorRect);
+		getCommandList()->SetGraphicsRootSignature(rootSignature);
 	}
 
 	void finishFrame() {

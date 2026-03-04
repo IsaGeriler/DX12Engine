@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DX12Core.h"
+#include "../Graphics/DX12Core.h"
 #include "../Core/MyMath.h"
 
 class Mesh {
@@ -51,7 +51,7 @@ public:
 		inputLayoutDesc.pInputElementDescs = inputLayout;
 	}
 
-	void draw(DX12Core* core) const {
+	void draw(DX12Core* core) {
 		core->getCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		core->getCommandList()->IASetVertexBuffers(0, 1, &vbView);
 		core->getCommandList()->DrawInstanced(3, 1, 0, 0);

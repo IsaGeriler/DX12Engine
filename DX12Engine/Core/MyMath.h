@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <numbers>
 
@@ -90,7 +91,7 @@ public:
 	float length() const { return sqrtf(SQ(x) + SQ(y) + SQ(z)); }
 	float lengthSquared() const { return SQ(x) + SQ(y) + SQ(z); }
 
-	void divideW() const { float invW = 1.f / w; x* invW; y* invW; z* invW; }
+	void divideW() { float invW = 1.f / w; x *= invW; y *= invW; z *= invW; }
 
 	void normalize() { float l = 1.f / sqrtf(SQ(x) + SQ(y) + SQ(z)); x *= l; y *= l; z*= l; }
 	float normalizeAndGetLength() { float l = sqrtf(SQ(x) + SQ(y) + SQ(z)); float invL = 1.f / l; x *= invL; y *= invL; z *= invL; return l; }
@@ -104,9 +105,11 @@ static Vec4 Max(const Vec4& v1, const Vec4& v2) { return Vec4(std::max(v1.x, v2.
 class Matrix {
 private:
 	void identity() {
-		memset(a, 0, 16 * sizeof(a[0]));
+		memset(a, 0, 16 * sizeof(float));
 		a[0] = 1.f; a[5] = 1.f; a[10] = 1.f; a[15] = 1.f;
  	}
+
+	void zero() { memset(a, 0, 16 * sizeof(float)); }
 public:
 	union {
 		float m[4][4];
@@ -122,7 +125,10 @@ public:
 		m[3][0] = m30; m[3][1] = m31; m[3][2] = m32; m[3][3] = m33;
 	}
 
-	float& operator[](int index) { return a[index]; }
+	float& operator[](int index) {
+		assert((index >= 0 && index <= 15) && "Invalid index passed!");
+		return a[index];
+	}
 
 	Matrix transpose() {
 		return Matrix(m[0][0], m[1][0], m[2][0], m[3][0],
@@ -196,7 +202,7 @@ public:
 		float zNorm = 1.f / (zFar - zNear);
 
 		Matrix pers;
-		memset(pers.m, 0, 16 * sizeof(float));
+		pers.zero();
 
 		pers[0] = fov / aspect;
 		pers[5] = fov;
@@ -301,7 +307,7 @@ public:
 			inv.identity();
 			return inv;
 		}
-		det = 1.0 / det;
+		det = 1.f / det;
 		for (int i = 0; i < 16; i++) {
 			inv[i] = inv[i] * det;
 		}
@@ -454,7 +460,7 @@ public:
 	};
 
 	Colour(float _r = 0.f, float _g = 0.f, float _b = 0.f, float _a = 1.f) : r(_r), g(_g), b(_b), a(_a) {}
-	Colour(unsigned char _r = 0, unsigned char _g = 0, unsigned char _b = 0, unsigned char _a = 255) : r(_r / 255.f), g(_g / 255.f), b(_b / 255.f), a(_a / 255.f) {}
+	Colour(unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a = 255) : r(_r / 255.f), g(_g / 255.f), b(_b / 255.f), a(_a / 255.f) {}
 
 	// Operator Overloading
 	Colour operator+(const Colour& colour) const { return Colour(r + colour.r, g + colour.g, b + colour.b, a + colour.a); }

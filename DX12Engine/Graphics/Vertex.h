@@ -1,7 +1,7 @@
 #pragma once
 
-#include "DX12Core.h"
-#include "Mesh.h"
+#include "../Graphics/DX12Core.h"
+#include "../Graphics/Mesh.h"
 #include "../Core/MyMath.h"
 
 struct PRIM_VERTEX {
@@ -15,12 +15,16 @@ public:
 	Mesh mesh;
 
 	void initialize(DX12Core* core) {
-		vertices[0].position = Vec3(0, 1.0f, 0);
-		vertices[0].colour = Colour(0, 1.0f, 0);
-		vertices[1].position = Vec3(-1.0f, -1.0f, 0);
-		vertices[1].colour = Colour(1.0f, 0, 0);
-		vertices[2].position = Vec3(1.0f, -1.0f, 0);
-		vertices[2].colour = Colour(0, 0, 1.0f);
-		mesh.initialize(core, &vertices, sizeof(PRIM_VERTEX), 3);
+		vertices[0].position = Vec3(0.f, 1.f, 0.f);
+		vertices[0].colour = Colour(0.f, 1.f, 0.f);
+		vertices[1].position = Vec3(-1.f, -1.f, 0.f);
+		vertices[1].colour = Colour(1.f, 0.f, 0.f);
+		vertices[2].position = Vec3(1.f, -1.f, 0.f);
+		vertices[2].colour = Colour(0.f, 0.f, 1.f);
+		mesh.initialize(core, &vertices[0], sizeof(PRIM_VERTEX), 3);
+	}
+
+	void draw(DX12Core* core) {
+		mesh.draw(core);
 	}
 };
