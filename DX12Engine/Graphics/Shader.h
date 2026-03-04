@@ -47,7 +47,7 @@ public:
 		D3D12_SHADER_DESC desc;
 		reflection->GetDesc(&desc);
 
-		for (int i = 0; i < desc.ConstantBuffers; i++) {
+		for (unsigned int i = 0; i < desc.ConstantBuffers; i++) {
 			ConstantBuffer buffer;
 			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
 			D3D12_SHADER_BUFFER_DESC cbDesc;
@@ -55,7 +55,7 @@ public:
 			buffer.name = cbDesc.Name;
 			unsigned int totalSize = 0;
 
-			for (int j = 0; j < cbDesc.Variables; j++) {
+			for (unsigned int j = 0; j < cbDesc.Variables; j++) {
 				ID3D12ShaderReflectionVariable* var = constantBuffer->GetVariableByIndex(j);
 				D3D12_SHADER_VARIABLE_DESC vDesc;
 				var->GetDesc(&vDesc);
@@ -104,16 +104,11 @@ public:
 
 	void initialize(DX12Core* core) {
 		prim.initialize(core);
-		// cbuffer.initialize(core, sizeof(ConstantBuffer1), 2);
-		// cbuffer.initialize(core, sizeof(ConstantBuffer2), 2);
 		compile(core);
 	}
 
 	void draw(DX12Core* core /* , ConstantBuffer2* cb /* ConstantBuffer1* cb */) {
 		core->beginRenderPass();
-		// cbuffer.update(cb, sizeof(ConstantBuffer1), core->frameIndex());
-		// cbuffer.update(cb, sizeof(ConstantBuffer2), core->frameIndex());
-		// core->getCommandList()->SetGraphicsRootConstantBufferView(1, cbuffer.getGPUAddress(core->frameIndex()));
 		apply(core);
 		psos.bind(core, "Triangle");
 		prim.draw(core);

@@ -86,9 +86,10 @@ public:
 	void initialize(HWND hwnd, int _width, int _height) {
 		// Enable Debugging
 		ID3D12Debug1* debug;
-		D3D12GetDebugInterface(IID_PPV_ARGS(&debug));
-		debug->EnableDebugLayer();
-		debug->Release();
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug)))) {
+			debug->EnableDebugLayer();
+			debug->Release();
+		}
 
 		// Enumarate Adapters
 		IDXGIFactory6* factory = NULL;
@@ -234,14 +235,14 @@ public:
 
 		// Update Root Signature for Constant Buffer
 		std::vector<D3D12_ROOT_PARAMETER> parameters;
-		D3D12_ROOT_PARAMETER rootParameterCBVS;
+		D3D12_ROOT_PARAMETER rootParameterCBVS = {};
 		rootParameterCBVS.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParameterCBVS.Descriptor.ShaderRegister = 0;  // Register(b0)
 		rootParameterCBVS.Descriptor.RegisterSpace = 0;
 		rootParameterCBVS.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 		parameters.push_back(rootParameterCBVS);
 
-		D3D12_ROOT_PARAMETER rootParameterCBPS;
+		D3D12_ROOT_PARAMETER rootParameterCBPS = {};
 		rootParameterCBPS.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParameterCBPS.Descriptor.ShaderRegister = 0;  // Register(b0)
 		rootParameterCBPS.Descriptor.RegisterSpace = 0;
@@ -250,7 +251,7 @@ public:
 
 		D3D12_ROOT_SIGNATURE_DESC desc = {};
 		desc.NumParameters = parameters.size();
-		desc.pParameters = &parameters[0];
+		desc.pParameters = parameters.data();
 		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 		
 		ID3DBlob* serialized;
@@ -291,6 +292,8 @@ public:
 
 	void beginFrame() {
 		unsigned int frameIndex = swapchain->GetCurrentBackBufferIndex();
+		graphicsQueueFence[frameIndex].wait();
+
 		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetViewHandle = backbufferHeap -> GetCPUDescriptorHandleForHeapStart();
 		unsigned int renderTargetViewDescriptorSize = device -> GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		renderTargetViewHandle.ptr += frameIndex * renderTargetViewDescriptorSize;
