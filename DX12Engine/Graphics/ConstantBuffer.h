@@ -2,8 +2,16 @@
 
 #include "../Graphics/DX12Core.h"
 
+// Pulsing Triangle Constant Buffer
 struct alignas(16) ConstantBuffer1 {
 	float time;
+};
+
+// Lights Spinning Triangle Constant Buffer
+struct alignas(16) ConstantBuffer2 {
+	float time;
+	float padding[3];
+	Vec4 lights[4];
 };
 
 class ConstantBuffer {

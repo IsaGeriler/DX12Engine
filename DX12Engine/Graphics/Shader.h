@@ -56,13 +56,15 @@ public:
 
 	void initialize(DX12Core* core) {
 		prim.initialize(core);
-		cbuffer.initialize(core, sizeof(ConstantBuffer1), 2);
+		// cbuffer.initialize(core, sizeof(ConstantBuffer1), 2);
+		cbuffer.initialize(core, sizeof(ConstantBuffer2), 2);
 		compile(core);
 	}
 
-	void draw(DX12Core* core, ConstantBuffer1* cb) {
+	void draw(DX12Core* core, ConstantBuffer2* cb/*ConstantBuffer1* cb*/) {
 		core->beginRenderPass();
-		cbuffer.update(cb, sizeof(ConstantBuffer1), core->frameIndex());
+		// cbuffer.update(cb, sizeof(ConstantBuffer1), core->frameIndex());
+		cbuffer.update(cb, sizeof(ConstantBuffer2), core->frameIndex());
 		core->getCommandList()->SetGraphicsRootConstantBufferView(1, cbuffer.getGPUAddress(core->frameIndex()));
 		psos.bind(core, "Triangle");
 		prim.draw(core);

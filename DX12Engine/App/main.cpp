@@ -1,9 +1,13 @@
 #include <cstdio>
 
+#include "../Core/MyMath.h"
 #include "../Platform/Window.h"
 #include "../Platform/Timer.h"
 #include "../Graphics/DX12Core.h"
 #include "../Graphics/Shader.h"
+
+#define WIDTH 1024
+#define HEIGHT 1024
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PSTR lpCmdLine, _In_ int nCmdShow) {
 	AllocConsole();
@@ -11,26 +15,36 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	freopen_s(&stream, "CONOUT$", "w", stdout);
 
 	Window window;
-	window.initialize("DX12Engine", 1024, 1024);
+	window.initialize("DX12Engine", WIDTH, HEIGHT);
 
 	DX12Core core;
-	core.initialize(window.hwnd, 1024, 1024);
+	core.initialize(window.hwnd, WIDTH, HEIGHT);
 
 	Shader shader;
 	shader.initialize(&core);
 
 	Timer timer;
-	ConstantBuffer1 cb1;
-	cb1.time = 0.f;
+	// ConstantBuffer1 cb1;
+	// cb1.time = 0.f;
+	ConstantBuffer2 cb2;
+	cb2.time = 0.f;
 
 	while (true) {
-		cb1.time += timer.dt();
+		// cb1.time += timer.dt();
+		cb2.time += timer.dt();
+
+		for (int i = 0; i < 4; i++) {
+			float angle = cb2.time + (i * std::numbers::pi_v<float> / 2.f);
+			cb2.lights[i] = Vec4(WIDTH / 2.f + (cosf(angle) * (WIDTH * 0.3f)), HEIGHT / 2.f + (sinf(angle) * (HEIGHT * 0.3f)), 0.f, 0.f);
+		}
+
 		core.beginFrame();
 
 		window.processMessages();
 		if (window.keys[VK_ESCAPE]) break;
 		
-		shader.draw(&core, &cb1);
+		// shader.draw(&core, &cb1);
+		shader.draw(&core, &cb2);
 		core.finishFrame();
 	}
 
