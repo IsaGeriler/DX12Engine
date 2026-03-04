@@ -24,27 +24,38 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	shader.initialize(&core);
 
 	Timer timer;
+	Vec4 lights[4];
+	float time = 0.f;
+
 	// ConstantBuffer1 cb1;
 	// cb1.time = 0.f;
-	ConstantBuffer2 cb2;
-	cb2.time = 0.f;
-
+	// ConstantBuffer2 cb2;
+	// cb2.time = 0.f;
+	
 	while (true) {
 		// cb1.time += timer.dt();
-		cb2.time += timer.dt();
-
+		// cb2.time += timer.dt();
+		time += timer.dt();
+		shader.updateConstantVS("bufferName", "time", &time);
+		shader.updateConstantPS("bufferName", "time", &time);
 		for (int i = 0; i < 4; i++) {
-			float angle = cb2.time + (i * std::numbers::pi_v<float> / 2.f);
-			cb2.lights[i] = Vec4(WIDTH / 2.f + (cosf(angle) * (WIDTH * 0.3f)), HEIGHT / 2.f + (sinf(angle) * (HEIGHT * 0.3f)), 0.f, 0.f);
+			float angle = time + (i * std::numbers::pi_v<float> / 2.f);
+			lights[i] = Vec4(
+				WIDTH / 2.f + (cosf(angle) * (WIDTH * 0.3f)),
+				HEIGHT / 2.f + (sinf(angle) * (HEIGHT * 0.3f)),
+				0.f, 0.f
+			);
 		}
+		shader.updateConstantVS("bufferName", "lights", lights);
+		shader.updateConstantPS("bufferName", "lights", lights);
 
 		core.beginFrame();
-
 		window.processMessages();
 		if (window.keys[VK_ESCAPE]) break;
 		
 		// shader.draw(&core, &cb1);
-		shader.draw(&core, &cb2);
+		// shader.draw(&core, &cb2);
+		shader.draw(&core);
 		core.finishFrame();
 	}
 

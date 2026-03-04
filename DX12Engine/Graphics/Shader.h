@@ -22,6 +22,9 @@ public:
 	ID3DBlob* vertexShader = nullptr;
 	ID3DBlob* pixelShader = nullptr;
 
+	std::vector<ConstantBuffer> vertexShaderConstantBuffers;
+	std::vector<ConstantBuffer> pixelShaderConstantBuffers;
+
 	// Create instance of Vertex
 	ScreenSpaceTriangle prim;
 
@@ -38,6 +41,36 @@ public:
 		return buffer.str();
 	}
 
+	void initializeConstantBuffers(DX12Core* core, ID3DBlob* shader, std::vector<ConstantBuffer> &buffers) {
+		ID3D12ShaderReflection* reflection;
+		D3DReflect(shader->GetBufferPointer(), shader->GetBufferSize(), IID_PPV_ARGS(&reflection));
+		D3D12_SHADER_DESC desc;
+		reflection->GetDesc(&desc);
+
+		for (int i = 0; i < desc.ConstantBuffers; i++) {
+			ConstantBuffer buffer;
+			ID3D12ShaderReflectionConstantBuffer* constantBuffer = reflection->GetConstantBufferByIndex(i);
+			D3D12_SHADER_BUFFER_DESC cbDesc;
+			constantBuffer->GetDesc(&cbDesc);
+			buffer.name = cbDesc.Name;
+			unsigned int totalSize = 0;
+
+			for (int j = 0; j < cbDesc.Variables; j++) {
+				ID3D12ShaderReflectionVariable* var = constantBuffer->GetVariableByIndex(j);
+				D3D12_SHADER_VARIABLE_DESC vDesc;
+				var->GetDesc(&vDesc);
+				ConstantBufferVariable bufferVariable;
+				bufferVariable.offset = vDesc.StartOffset;
+				bufferVariable.size = vDesc.Size;
+				buffer.constantBufferData.insert({ vDesc.Name, bufferVariable });
+				totalSize += bufferVariable.size;
+			}
+			buffer.initialize(core, totalSize);
+			buffers.push_back(buffer);
+		}
+		reflection->Release();
+	}
+
 	void compile(DX12Core* core) {
 		std::string vertexShaderPath = "../DX12Engine/Shaders/TriangleVS.hlsl";
 		std::string pixelShaderPath = "../DX12Engine/Shaders/TrianglePS.hlsl";
@@ -48,26 +81,59 @@ public:
 		std::string pixelShaderStr = read(pixelShaderPath);
 		
 		HRESULT hr = D3DCompile(vertexShaderStr.c_str(), strlen(vertexShaderStr.c_str()), NULL, NULL, NULL, "VS", "vs_5_0", 0, 0, &vertexShader, &status);
+		if (FAILED(hr)) { printf("%s", (char*)status->GetBufferPointer()); exit(0); }
+		initializeConstantBuffers(core, vertexShader, vertexShaderConstantBuffers);
+		
 		hr = D3DCompile(pixelShaderStr.c_str(), strlen(pixelShaderStr.c_str()), NULL, NULL, NULL, "PS", "ps_5_0", 0, 0, &pixelShader, &status);
+		if (FAILED(hr)) { printf("%s", (char*)status->GetBufferPointer()); exit(0); }
+		initializeConstantBuffers(core, pixelShader, pixelShaderConstantBuffers);
 
-		if (FAILED(hr)) { (char*)status->GetBufferPointer(); }
 		psos.createPSO(core, "Triangle", vertexShader, pixelShader, prim.mesh.inputLayoutDesc);
+	}
+
+	void apply(DX12Core* core) {
+		for (int i = 0; i < vertexShaderConstantBuffers.size(); i++) {
+			core->getCommandList()->SetGraphicsRootConstantBufferView(0, vertexShaderConstantBuffers[i].getGPUAddress());
+			vertexShaderConstantBuffers[i].next();
+		}
+		for (int i = 0; i < pixelShaderConstantBuffers.size(); i++) {
+			core->getCommandList()->SetGraphicsRootConstantBufferView(1, pixelShaderConstantBuffers[i].getGPUAddress());
+			pixelShaderConstantBuffers[i].next();
+		}
 	}
 
 	void initialize(DX12Core* core) {
 		prim.initialize(core);
 		// cbuffer.initialize(core, sizeof(ConstantBuffer1), 2);
-		cbuffer.initialize(core, sizeof(ConstantBuffer2), 2);
+		// cbuffer.initialize(core, sizeof(ConstantBuffer2), 2);
 		compile(core);
 	}
 
-	void draw(DX12Core* core, ConstantBuffer2* cb/*ConstantBuffer1* cb*/) {
+	void draw(DX12Core* core /* , ConstantBuffer2* cb /* ConstantBuffer1* cb */) {
 		core->beginRenderPass();
 		// cbuffer.update(cb, sizeof(ConstantBuffer1), core->frameIndex());
-		cbuffer.update(cb, sizeof(ConstantBuffer2), core->frameIndex());
-		core->getCommandList()->SetGraphicsRootConstantBufferView(1, cbuffer.getGPUAddress(core->frameIndex()));
+		// cbuffer.update(cb, sizeof(ConstantBuffer2), core->frameIndex());
+		// core->getCommandList()->SetGraphicsRootConstantBufferView(1, cbuffer.getGPUAddress(core->frameIndex()));
+		apply(core);
 		psos.bind(core, "Triangle");
 		prim.draw(core);
+	}
+
+	void updateConstant(std::string constantBufferName, std::string variableName, void* data, std::vector<ConstantBuffer>& buffers) {
+		for (int i = 0; i < buffers.size(); i++) {
+			if (buffers[i].name == constantBufferName) {
+				buffers[i].update(variableName, data);
+				return;
+			}
+		}
+	}
+
+	void updateConstantVS(std::string constantBufferName, std::string variableName, void* data) {
+		updateConstant(constantBufferName, variableName, data, vertexShaderConstantBuffers);
+	}
+
+	void updateConstantPS(std::string constantBufferName, std::string variableName, void* data) {
+		updateConstant(constantBufferName, variableName, data, pixelShaderConstantBuffers);
 	}
 };
 

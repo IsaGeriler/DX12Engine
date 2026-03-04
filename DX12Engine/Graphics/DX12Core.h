@@ -84,6 +84,12 @@ public:
 	ID3D12RootSignature* rootSignature;
 
 	void initialize(HWND hwnd, int _width, int _height) {
+		// Enable Debugging
+		ID3D12Debug1* debug;
+		D3D12GetDebugInterface(IID_PPV_ARGS(&debug));
+		debug->EnableDebugLayer();
+		debug->Release();
+
 		// Enumarate Adapters
 		IDXGIFactory6* factory = NULL;
 		IDXGIAdapter1* adapterf;
