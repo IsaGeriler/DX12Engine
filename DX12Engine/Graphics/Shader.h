@@ -7,6 +7,7 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 
+#include "../Graphics/ConstantBuffer.h"
 #include "../Graphics/Vertex.h"
 #include "../Graphics/PSOManager.h"
 
@@ -18,14 +19,17 @@
 class Shader {
 public:
 	// Vertex and Pixel Shader
-	ID3DBlob* vertexShader;
-	ID3DBlob* pixelShader;
+	ID3DBlob* vertexShader = nullptr;
+	ID3DBlob* pixelShader = nullptr;
 
 	// Create instance of Vertex
 	ScreenSpaceTriangle prim;
 
 	// Create instance of Pipeline State Manager
 	PSOManager psos;
+
+	// Create instance of a Constant Buffer
+	ConstantBuffer cbuffer;
 
 	std::string read(std::string filename) {
 		std::ifstream file(filename);
@@ -52,12 +56,23 @@ public:
 
 	void initialize(DX12Core* core) {
 		prim.initialize(core);
+		cbuffer.initialize(core, sizeof(ConstantBuffer1), 2);
 		compile(core);
 	}
 
-	void draw(DX12Core* core) {
+	void draw(DX12Core* core, ConstantBuffer1* cb) {
 		core->beginRenderPass();
+		cbuffer.update(cb, sizeof(ConstantBuffer1), core->frameIndex());
+		core->getCommandList()->SetGraphicsRootConstantBufferView(1, cbuffer.getGPUAddress(core->frameIndex()));
 		psos.bind(core, "Triangle");
 		prim.draw(core);
 	}
+};
+
+// Implement a ShaderManager
+class ShaderManager {
+public:
+	// Save to file - D3DWriteBlobToFile(compiledShaderCode, L"shadername.cso", false);
+	// Read from file - D3DReadFileToBlob(L"shadername.cso", &shader);
+	// Store the shaders in a map - std::map<std::string, Shader> shaders;
 };

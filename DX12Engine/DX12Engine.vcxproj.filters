@@ -113,5 +113,11 @@
     <ClInclude Include="Graphics\PSOManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\ConstantBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
