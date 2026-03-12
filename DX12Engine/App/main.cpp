@@ -8,6 +8,7 @@
 #include "../Graphics/Plane.h"
 #include "../Graphics/PSOManager.h"
 #include "../Graphics/Shader.h"
+#include "../Graphics/Sphere.h"
 
 #define WIDTH 1024
 #define HEIGHT 1024
@@ -32,6 +33,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Cube cube;
 	cube.initialize(&core, &psos, &shaders);
 
+	Sphere sphere;
+	sphere.initialize(&core, &psos, &shaders, 32, 32, 1000.f);
+
 	Matrix vp;
 	Timer timer;
 	float time = 0.f;
@@ -50,6 +54,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		if (window.keys[VK_ESCAPE]) break;
 		plane.draw(&core, &psos, &shaders, vp);
 		cube.draw(&core, &psos, &shaders, vp);
+		sphere.draw(&core, &psos, &shaders, vp);
 		
 		core.finishFrame();
 	}
