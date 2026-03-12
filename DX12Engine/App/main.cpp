@@ -4,6 +4,8 @@
 #include "../Platform/Window.h"
 #include "../Platform/Timer.h"
 #include "../Graphics/DX12Core.h"
+#include "../Graphics/Plane.h"
+#include "../Graphics/PSOManager.h"
 #include "../Graphics/Shader.h"
 
 #define WIDTH 1024
@@ -20,37 +22,30 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	DX12Core core;
 	core.initialize(window.hwnd, WIDTH, HEIGHT);
 
-	Shader shader;
-	shader.initialize(&core);
+	PSOManager psos;
+	ShaderManager shaders;
 
+	Plane plane;
+	plane.initialize(&core, &psos, &shaders);
+
+	Matrix vp;
 	Timer timer;
-	Vec4 lights[4];
 	float time = 0.f;
 
 	while (true) {
 		time += timer.dt();
 
-		shader.updateConstantVS("bufferName", "time", &time);
-		shader.updateConstantPS("bufferName", "time", &time);
-
-		for (int i = 0; i < 4; i++) {
-			float angle = time + (i * std::numbers::pi_v<float> / 2.f);
-			lights[i] = Vec4(
-				WIDTH / 2.f + (cosf(angle) * (WIDTH * 0.3f)),
-				HEIGHT / 2.f + (sinf(angle) * (HEIGHT * 0.3f)),
-				0.f, 0.f
-			);
-		}
-
-		shader.updateConstantVS("bufferName", "lights", lights);
-		shader.updateConstantPS("bufferName", "lights", lights);
+		Vec3 from = Vec3(11.f * cosf(time), 5.f, 11.f * sinf(time));
+		Matrix v = Matrix::lookAt(from, Vec3(0.f, 0.f, 0.f), Vec3(0.f, 1.f, 0.f));
+		Matrix p = Matrix::perspective(60.f, 1.7777778f, 0.01f, 10000.f);
+		vp = v * p;
 
 		core.beginFrame();
 		window.processMessages();
 		
 		if (window.keys[VK_ESCAPE]) break;
+		plane.draw(&core, &psos, &shaders, vp);
 		
-		shader.draw(&core);
 		core.finishFrame();
 	}
 

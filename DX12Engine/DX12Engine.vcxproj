@@ -146,6 +146,7 @@
     <ClInclude Include="Graphics\ConstantBuffer.h" />
     <ClInclude Include="Graphics\DX12Core.h" />
     <ClInclude Include="Graphics\Mesh.h" />
+    <ClInclude Include="Graphics\Plane.h" />
     <ClInclude Include="Graphics\PSOManager.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Vertex.h" />

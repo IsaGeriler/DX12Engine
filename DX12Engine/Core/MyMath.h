@@ -197,8 +197,8 @@ public:
 		return Matrix::rotateX(x) * Matrix::rotateY(y) * Matrix::rotateZ(z);
 	}
 
-	static Matrix perspective(float thetaDegrees, float aspect, float zNear, float zFar) {
-		float fov = 1.f / tanf(thetaDegrees * 0.5f * std::numbers::pi_v<float> / 180.0f);
+	static Matrix perspective(float fov_theta, float aspect, float zNear, float zFar) {
+		float fov = 1.f / tanf(fov_theta * 0.5f * std::numbers::pi_v<float> / 180.0f);
 		float zNorm = 1.f / (zFar - zNear);
 
 		Matrix pers;

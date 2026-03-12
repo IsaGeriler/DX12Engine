@@ -73,4 +73,9 @@ public:
 		offsetIndex++;
 		if (offsetIndex >= maxDrawCalls) offsetIndex = 0;
 	}
+
+	void free() {
+		constantBuffer->Unmap(0, NULL);
+		constantBuffer->Release();
+	}
 };

@@ -303,7 +303,7 @@ public:
 		getCommandList()->OMSetRenderTargets(1, &renderTargetViewHandle, FALSE, &dsvHandle);
 		
 		float color[4];  // RGBA - Red, Green, Blue, Alpha (Opacity)
-		color[0] = 1.0; color[1] = 0.0; color[2] = 0.0; color[3] = 1.0;
+		color[0] = 0.0; color[1] = 0.0; color[2] = 1.0; color[3] = 1.0;
 		getCommandList()->ClearRenderTargetView(renderTargetViewHandle, color, 0, NULL);
 		getCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, NULL);
 	}
