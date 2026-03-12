@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "../Graphics/Cube.h"
 #include "../Core/MyMath.h"
 #include "../Platform/Window.h"
 #include "../Platform/Timer.h"
@@ -28,6 +29,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Plane plane;
 	plane.initialize(&core, &psos, &shaders);
 
+	Cube cube;
+	cube.initialize(&core, &psos, &shaders);
+
 	Matrix vp;
 	Timer timer;
 	float time = 0.f;
@@ -45,6 +49,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		
 		if (window.keys[VK_ESCAPE]) break;
 		plane.draw(&core, &psos, &shaders, vp);
+		cube.draw(&core, &psos, &shaders, vp);
 		
 		core.finishFrame();
 	}
