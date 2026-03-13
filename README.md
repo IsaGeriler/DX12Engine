@@ -1,3 +1,3 @@
 # DX12Engine
 ## Current State of the Engine (WIP)
-https://github.com/user-attachments/assets/832291e3-89e1-4f0f-95e8-78c9caabab3a
+<img width="1514" height="1200" alt="image" src="https://github.com/user-attachments/assets/570cdb4b-7e5a-4d46-8747-c98a04386475" />
