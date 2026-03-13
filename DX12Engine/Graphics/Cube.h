@@ -76,11 +76,10 @@ public:
 		psos->createPSO(core, pso_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getStaticLayout());
 	}
 
-	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, Matrix& vp) {
-		Matrix cubeWorld;
+	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, Matrix& world, Matrix& vp) {
 		core->beginRenderPass();
 		shaders->apply(core, shader_name);
-		shaders->updateConstantVS(shader_name, "staticMeshBuffer", "W", &cubeWorld);
+		shaders->updateConstantVS(shader_name, "staticMeshBuffer", "W", &world);
 		shaders->updateConstantVS(shader_name, "staticMeshBuffer", "VP", &vp);
 		psos->bind(core, pso_name);
 		mesh.draw(core);

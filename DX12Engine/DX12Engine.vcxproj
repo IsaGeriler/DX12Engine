@@ -151,6 +151,7 @@
     <ClInclude Include="Graphics\PSOManager.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Sphere.h" />
+    <ClInclude Include="Graphics\StaticMeshModel.h" />
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Platform\Timer.h" />
     <ClInclude Include="Platform\Window.h" />
