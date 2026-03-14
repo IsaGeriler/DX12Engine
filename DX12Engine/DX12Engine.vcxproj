@@ -133,7 +133,7 @@
   <ItemGroup>
     <ClCompile Include="App\main.cpp" />
     <ClCompile Include="Platform\Window.cpp" />
-    <ClCompile Include="ThirdParty\imgui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="ThirdParty\imgui\backends\imgui_impl_dx12.cpp" />
     <ClCompile Include="ThirdParty\imgui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui_demo.cpp" />
@@ -143,6 +143,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\MyMath.h" />
+    <ClInclude Include="Graphics\AnimatedMeshModel.h" />
+    <ClInclude Include="Graphics\Animation.h" />
     <ClInclude Include="Graphics\ConstantBuffer.h" />
     <ClInclude Include="Graphics\Cube.h" />
     <ClInclude Include="Graphics\DX12Core.h" />
@@ -163,7 +165,7 @@
     <ClInclude Include="ThirdParty\FMOD\fmod_dsp_effects.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod_errors.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod_output.h" />
-    <ClInclude Include="ThirdParty\imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="ThirdParty\imgui\backends\imgui_impl_dx12.h" />
     <ClInclude Include="ThirdParty\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="ThirdParty\imgui\imconfig.h" />
     <ClInclude Include="ThirdParty\imgui\imgui.h" />

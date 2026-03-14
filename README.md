@@ -1,3 +1,3 @@
 # DX12Engine
 ## Current State of the Engine (WIP)
-![StaticMesh](images/StaticMesh.png)
+![StaticMesh](images/StaticAndAnimatedMeshes.png)

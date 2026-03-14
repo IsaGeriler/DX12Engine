@@ -144,10 +144,18 @@ public:
 		return mat;
 	}
 
+	// Scale by a scalar
 	static Matrix scale(float s) {
 		Matrix mat;
 		s = std::min(s, 0.01f);
 		mat.a[0] = s; mat.a[5] = s; mat.a[10] = s;
+		return mat;
+	}
+
+	// Scale by a vector
+	static Matrix scale(const Vec3& v) {
+		Matrix mat;
+		mat.a[0] = v.x; mat.a[5] = v.y; mat.a[10] = v.x;
 		return mat;
 	}
 

@@ -84,6 +84,12 @@ public:
 		inputLayoutDesc = VertexLayoutCache::getStaticLayout();
 	}
 
+	// Initialize an animated mesh
+	void initialize(DX12Core* core, std::vector<ANIMATED_VERTEX> vertices, std::vector<unsigned int> indices) {
+		initialize(core, &vertices[0], sizeof(ANIMATED_VERTEX), vertices.size(), &indices[0], indices.size());
+		inputLayoutDesc = VertexLayoutCache::getAnimatedLayout();
+	}
+
 	void draw(DX12Core* core) {
 		core->getCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		core->getCommandList()->IASetVertexBuffers(0, 1, &vbView);
