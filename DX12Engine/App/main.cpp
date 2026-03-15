@@ -11,6 +11,7 @@
 #include "../Graphics/Shader.h"
 #include "../Graphics/StaticMeshModel.h"
 #include "../Graphics/Sphere.h"
+#include "../Graphics/Texture.h"
 
 #define WIDTH 1920
 #define HEIGHT 1080
@@ -28,6 +29,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	PSOManager psos;
 	ShaderManager shaders;
+	TextureManager textures;
 
 	Plane plane;
 	plane.initialize(&core, &psos, &shaders);
@@ -41,12 +43,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Matrix acaciaWorld;
 	acaciaWorld = Matrix::scale(0.01f) * Matrix::translate(Vec3(0.f, 0.f, 5.f));
 	StaticMeshModel acacia;
-	acacia.initialize(&core, &psos, &shaders, "../DX12Engine/Asset/Model/acacia_003.gem");
-
+	acacia.initialize(&core, &psos, &shaders, "../DX12Engine/Asset/Models/acacia_003.gem");
 
 	Matrix trex_world = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(-2.5f, 0.f, -2.5f));
 	AnimatedMeshModel trex;
-	trex.initialize(&core, &psos, &shaders, "../DX12Engine/Asset/Model/TRex.gem");
+	trex.initialize(&core, &psos, &shaders, &textures, "../DX12Engine/Asset/Models/TRex.gem");
 
 	AnimationInstance instance;
 	instance.initialize(&trex.animation);
@@ -87,7 +88,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		// Draw Animated Model
 		instance.updateAnimation("run", dt);
-		trex.draw(&core, &psos, &shaders, trex_world, vp, &instance);
+		trex.draw(&core, &psos, &shaders, &textures, trex_world, vp, &instance);
 
 		core.finishFrame();
 	}

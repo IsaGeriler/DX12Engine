@@ -5,6 +5,8 @@
 #include <d3dcompiler.h>
 #include <vector>
 
+#include "../Graphics/DescriptorHeap.h"
+
 #pragma comment(lib, "d3d12")
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -83,6 +85,9 @@ public:
 	// Root Signature Member Variable
 	ID3D12RootSignature* rootSignature;
 
+	// Descriptor Heap
+	DescriptorHeap srvHeap;
+
 	void initialize(HWND hwnd, int _width, int _height) {
 		// Enable Debugging
 		ID3D12Debug1* debug;
@@ -160,6 +165,7 @@ public:
 		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&graphicsCommandAllocator[1]));
 		device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&graphicsCommandList[1]));
 		graphicsQueueFence[1].create(device);
+		factory->Release();
 
 		// Create Heap
 		D3D12_DESCRIPTOR_HEAP_DESC renderTargetViewHeapDesc = {};
@@ -175,7 +181,10 @@ public:
 		unsigned int renderTargetViewDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		for (unsigned int i = 0; i < 2; i++) {
 			swapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffers[i]));
-			device->CreateRenderTargetView(backbuffers[i], nullptr, renderTargetViewHandle);
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			device->CreateRenderTargetView(backbuffers[i], &rtvDesc, renderTargetViewHandle);
 			renderTargetViewHandle.ptr += renderTargetViewDescriptorSize;
 		}
 
@@ -249,9 +258,43 @@ public:
 		rootParameterCBPS.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 		parameters.push_back(rootParameterCBPS);
 
+		// Update root signature
+		// Add range of textures
+		D3D12_DESCRIPTOR_RANGE srvRange = {};
+		srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		srvRange.NumDescriptors = 8;	  // number of SRVs (t0-t7)
+		srvRange.BaseShaderRegister = 0;  // start at t0
+		srvRange.RegisterSpace = 0;
+		srvRange.OffsetInDescriptorsFromTableStart = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+
+		D3D12_ROOT_PARAMETER rootParameterTex = {};
+		rootParameterTex.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameterTex.DescriptorTable.NumDescriptorRanges = 1;
+		rootParameterTex.DescriptorTable.pDescriptorRanges = &srvRange;
+		rootParameterTex.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		parameters.push_back(rootParameterTex);
+
+		// Add sampler
+		D3D12_STATIC_SAMPLER_DESC staticSampler = {};
+		staticSampler.Filter = D3D12_FILTER_MINIMUM_MIN_MAG_MIP_LINEAR;
+		staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSampler.MipLODBias = 0;
+		staticSampler.MaxAnisotropy = 1;
+		staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+		staticSampler.MinLOD = 0;
+		staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
+		staticSampler.ShaderRegister = 0;
+		staticSampler.RegisterSpace = 0;
+		staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 		D3D12_ROOT_SIGNATURE_DESC desc = {};
 		desc.NumParameters = parameters.size();
+		desc.NumStaticSamplers = 1;
 		desc.pParameters = parameters.data();
+		desc.pStaticSamplers = &staticSampler;
 		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 		
 		ID3DBlob* serialized;
@@ -260,8 +303,8 @@ public:
 		device->CreateRootSignature(0, serialized->GetBufferPointer(), serialized->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 		serialized->Release();
 
-		// Do more stuff with factory, once done - release...
-		factory->Release();
+		// Initialize descriptor heap when core is initializes
+		srvHeap.initialize(device, 16384);
 	}
 
 	ID3D12GraphicsCommandList4* getCommandList() {
@@ -312,6 +355,7 @@ public:
 		getCommandList()->RSSetViewports(1, &viewport);
 		getCommandList()->RSSetScissorRects(1, &scissorRect);
 		getCommandList()->SetGraphicsRootSignature(rootSignature);
+		getCommandList()->SetDescriptorHeaps(1, &srvHeap.heap);
 	}
 
 	void finishFrame() {

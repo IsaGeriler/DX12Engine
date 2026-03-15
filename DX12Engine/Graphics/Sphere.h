@@ -48,7 +48,7 @@ public:
 
 		// Initialize mesh, shaders, and pso
 		mesh.initialize(core, vertices, indices);
-		shaders->load(core, shader_name, "../DX12Engine/Shaders/PlaneVS.hlsl", "../DX12Engine/Shaders/PlanePS.hlsl");
+		shaders->load(core, shader_name, "../DX12Engine/Shaders/PlaneVS.hlsl", "../DX12Engine/Shaders/UntexturedPS.hlsl");
 		psos->createPSO(core, pso_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getStaticLayout());
 	}
 

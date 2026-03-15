@@ -31,6 +31,9 @@ public:
 	// Create instance of a Constant Buffer
 	ConstantBuffer cbuffer;
 
+	// Texture Binding Points
+	std::map<std::string, int> textureBindPoints;
+
 	void initializeConstantBuffers(DX12Core* core, ID3DBlob* shader, std::vector<ConstantBuffer> &buffers) {
 		ID3D12ShaderReflection* reflection;
 		D3DReflect(shader->GetBufferPointer(), shader->GetBufferSize(), IID_PPV_ARGS(&reflection));
@@ -58,6 +61,17 @@ public:
 			buffer.initialize(core, totalSize);
 			buffers.push_back(buffer);
 		}
+
+		// Bind Texture Slots from Shader Reflection
+		for (int i = 0; i < desc.BoundResources; i++) {
+			D3D12_SHADER_INPUT_BIND_DESC bindDesc;
+			reflection->GetResourceBindingDesc(i, &bindDesc);
+
+			if (bindDesc.Type == D3D_SIT_TEXTURE) {
+				textureBindPoints.insert({ bindDesc.Name, bindDesc.BindPoint });
+			}
+		}
+
 		reflection->Release();
 	}
 
@@ -102,6 +116,13 @@ public:
 
 	void updateConstantPS(std::string constantBufferName, std::string variableName, void* data) {
 		updateConstant(constantBufferName, variableName, data, psConstantBuffers);
+	}
+
+	void updateTexturePS(DX12Core* core, std::string texture_name, int heapOffset) {
+		UINT bindPoint = textureBindPoints[texture_name];
+		D3D12_GPU_DESCRIPTOR_HANDLE	handle = core->srvHeap.gpuHandle;
+		handle.ptr += ((UINT64)(heapOffset - bindPoint) * (UINT64)(core->srvHeap.incrementSize));
+		core->getCommandList()->SetGraphicsRootDescriptorTable(2, handle);
 	}
 
 	void free() {
@@ -160,6 +181,10 @@ public:
 
 	void updateConstantPS(std::string shader_name, std::string constantBufferName, std::string variableName, void* data) {
 		shaders[shader_name].updateConstantPS(constantBufferName, variableName, data);
+	}
+
+	void updateTexturePS(DX12Core* core, std::string shader_name, std::string texture_name, int heapOffset) {
+		shaders[shader_name].updateTexturePS(core, texture_name, heapOffset);
 	}
 
 	Shader* find(std::string shader_name) {

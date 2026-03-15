@@ -8,6 +8,7 @@
 #include "../Graphics/Mesh.h"
 #include "../Graphics/PSOManager.h"
 #include "../Graphics/Shader.h"
+#include "../Graphics/Texture.h"
 #include "../Graphics/Vertex.h"
 #include "../ThirdParty/GEMLoader.h"
 
@@ -19,7 +20,9 @@ public:
 	std::string shader_name = "AnimatedMeshShader";
 	std::string pso_name = "AnimatedMeshPSO";
 
-	void initialize(DX12Core* core, PSOManager* psos, ShaderManager* shaders, std::string filename) {
+	std::vector<std::string> textureFilenames;
+
+	void initialize(DX12Core* core, PSOManager* psos, ShaderManager* shaders, TextureManager* textures, std::string filename) {
 		GEMLoader::GEMModelLoader loader;
 		std::vector<GEMLoader::GEMMesh> gemmeshes;
 		GEMLoader::GEMAnimation gemanimation;
@@ -34,10 +37,14 @@ public:
 				memcpy(&vertex, &gemmeshes[i].verticesAnimated[j], sizeof(ANIMATED_VERTEX));
 				vertices.emplace_back(vertex);
 			}
+			// Load texture with filename: gemmeshes[i].material.find("albedo").getValue()
+			textureFilenames.push_back("../DX12Engine/Asset/" + gemmeshes[i].material.find("albedo").getValue());
+			textures->loadTexture(core, "tex", textureFilenames[i]);
+
 			mesh->initialize(core, vertices, gemmeshes[i].indices);
 			meshes.emplace_back(mesh);
 		}
-		shaders->load(core, shader_name, "../DX12Engine/Shaders/AnimatedMeshVS.hlsl", "../DX12Engine/Shaders/AnimatedMeshPS.hlsl");
+		shaders->load(core, shader_name, "../DX12Engine/Shaders/AnimatedMeshVS.hlsl", "../DX12Engine/Shaders/TexturedPS.hlsl");
 		psos->createPSO(core, pso_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getAnimatedLayout());
 		memcpy(&animation.skeleton.globalInverse, &gemanimation.globalInverse, 16 * sizeof(float));
 
@@ -77,7 +84,7 @@ public:
 		}
 	}
 
-	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, Matrix& world, Matrix& vp, AnimationInstance* instance) {
+	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, TextureManager* textures, Matrix& world, Matrix& vp, AnimationInstance* instance) {
 		core->beginRenderPass();
 		shaders->apply(core, shader_name);
 
@@ -88,6 +95,7 @@ public:
 		psos->bind(core, pso_name);
 
 		for (unsigned int i = 0; i < meshes.size(); i++) {
+			shaders->updateTexturePS(core, shader_name, "tex", textures->findTexture(textureFilenames[i]));
 			meshes[i]->draw(core);
 		}
 	}
