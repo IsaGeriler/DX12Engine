@@ -142,7 +142,11 @@
     <ClCompile Include="ThirdParty\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Collision.h" />
     <ClInclude Include="Core\MyMath.h" />
+    <ClInclude Include="Game\Character.h" />
+    <ClInclude Include="Game\NPC.h" />
+    <ClInclude Include="Game\Player.h" />
     <ClInclude Include="Graphics\AnimatedMeshModel.h" />
     <ClInclude Include="Graphics\Animation.h" />
     <ClInclude Include="Graphics\ConstantBuffer.h" />
@@ -159,6 +163,7 @@
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Platform\Timer.h" />
     <ClInclude Include="Platform\Window.h" />
+    <ClInclude Include="Scene\Camera.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod.h" />
     <ClInclude Include="ThirdParty\FMOD\fmod.hpp" />
     <ClInclude Include="ThirdParty\FMOD\fmod_codec.h" />

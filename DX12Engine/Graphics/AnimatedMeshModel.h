@@ -19,6 +19,7 @@ public:
 
 	std::string shader_name = "AnimatedMeshShader";
 	std::string pso_name = "AnimatedMeshPSO";
+	std::string pso_wireframe_name = "AnimatedMeshWireframePSO";
 
 	std::vector<std::string> textureFilenames;
 
@@ -46,6 +47,7 @@ public:
 		}
 		shaders->load(core, shader_name, "../DX12Engine/Shaders/AnimatedMeshVS.hlsl", "../DX12Engine/Shaders/TexturedPS.hlsl");
 		psos->createPSO(core, pso_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getAnimatedLayout());
+		psos->createPSO(core, pso_wireframe_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getAnimatedLayout(), true);
 		memcpy(&animation.skeleton.globalInverse, &gemanimation.globalInverse, 16 * sizeof(float));
 
 		// Load Bones
@@ -84,7 +86,7 @@ public:
 		}
 	}
 
-	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, TextureManager* textures, Matrix& world, Matrix& vp, AnimationInstance* instance) {
+	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, TextureManager* textures, Matrix& world, Matrix& vp, AnimationInstance* instance, bool showWireframe) {
 		core->beginRenderPass();
 		shaders->apply(core, shader_name);
 
@@ -92,7 +94,8 @@ public:
 		shaders->updateConstantVS(shader_name, "animatedMeshBuffer", "VP", &vp);
 		shaders->updateConstantVS(shader_name, "animatedMeshBuffer", "bones", instance->matrices);
 
-		psos->bind(core, pso_name);
+		if (showWireframe) psos->bind(core, pso_wireframe_name);
+		else psos->bind(core, pso_name);
 
 		for (unsigned int i = 0; i < meshes.size(); i++) {
 			shaders->updateTexturePS(core, shader_name, "tex", textures->findTexture(textureFilenames[i]));

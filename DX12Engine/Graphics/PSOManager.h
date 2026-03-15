@@ -10,7 +10,7 @@ public:
 	// Pipeline State Objects - ID3D12PipelineState*
 	std::unordered_map<std::string, ID3D12PipelineState*> psos;
 
-	void createPSO(DX12Core* core, std::string pso_name, ID3DBlob* vs, ID3DBlob* ps, D3D12_INPUT_LAYOUT_DESC layout) {
+	void createPSO(DX12Core* core, std::string pso_name, ID3DBlob* vs, ID3DBlob* ps, D3D12_INPUT_LAYOUT_DESC layout, bool showWireframe = false) {
 		// Avoid creating extra state
 		if (psos.find(pso_name) != psos.end()) return;
 
@@ -22,13 +22,11 @@ public:
 		desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
 
 		// Rasterizer State (responsible for configuring the rasterizer)
-		D3D12_RASTERIZER_DESC rasterDesc = {};
-		rasterDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
 		// D3D12_CULL_MODE_FRONT - Do not draw triangles that are front facing.
 		// D3D12_CULL_MODE_BACK - Do not draw triangles that are back facing.
+		D3D12_RASTERIZER_DESC rasterDesc = {};
+		rasterDesc.FillMode = showWireframe ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID;
 		rasterDesc.CullMode = D3D12_CULL_MODE_NONE;
-
 		rasterDesc.FrontCounterClockwise = FALSE;
 		rasterDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 		rasterDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;

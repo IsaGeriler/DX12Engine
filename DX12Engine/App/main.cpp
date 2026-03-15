@@ -56,6 +56,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Timer timer;
 	float time = 0.f;
 
+	bool showWireframe = false;
+
 	while (true) {
 		core.beginFrame();
 
@@ -71,24 +73,29 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		window.processMessages();
 		
 		if (window.keys[VK_ESCAPE]) break;
-		plane.draw(&core, &psos, &shaders, vp);
-		cube.draw(&core, &psos, &shaders, cubeWorld, vp);
-		sphere.draw(&core, &psos, &shaders, vp);
+
+		// Enable-Disable Wireframe
+		if (window.keys['1']) showWireframe = true;
+		if (window.keys['2']) showWireframe = false;
+
+		plane.draw(&core, &psos, &shaders, vp, showWireframe);
+		cube.draw(&core, &psos, &shaders, cubeWorld, vp, showWireframe);
+		sphere.draw(&core, &psos, &shaders, vp, showWireframe);
 
 		// Drawing multiple mesh example (no instanced mesh)
 		cubeWorld = Matrix::translate(Vec3(5.f, 0.f, 0.f));
-		cube.draw(&core, &psos, &shaders, cubeWorld, vp);
+		cube.draw(&core, &psos, &shaders, cubeWorld, vp, showWireframe);
 		cubeWorld = Matrix::translate(Vec3(-5.f, 0.f, 0.f));
-		cube.draw(&core, &psos, &shaders, cubeWorld, vp);
+		cube.draw(&core, &psos, &shaders, cubeWorld, vp, showWireframe);
 		cubeWorld = Matrix::translate(Vec3(0.f, 0.f, -5.f));
-		cube.draw(&core, &psos, &shaders, cubeWorld, vp);
+		cube.draw(&core, &psos, &shaders, cubeWorld, vp, showWireframe);
 
 		// Draw Static Model
-		acacia.draw(&core, &psos, &shaders, acaciaWorld, vp);
+		acacia.draw(&core, &psos, &shaders, acaciaWorld, vp, showWireframe);
 
 		// Draw Animated Model
 		instance.updateAnimation("run", dt);
-		trex.draw(&core, &psos, &shaders, &textures, trex_world, vp, &instance);
+		trex.draw(&core, &psos, &shaders, &textures, trex_world, vp, &instance, showWireframe);
 
 		core.finishFrame();
 	}

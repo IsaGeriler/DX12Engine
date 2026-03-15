@@ -15,6 +15,7 @@ public:
 	std::vector<Mesh*> meshes;
 	std::string shader_name = "AcaciaShader";
 	std::string pso_name = "AcaciaPSO";
+	std::string pso_wireframe_name = "AcaciaWireframePSO";
 
 	void initialize(DX12Core* core, PSOManager* psos, ShaderManager* shaders, std::string filename) {
 		GEMLoader::GEMModelLoader loader;
@@ -34,14 +35,17 @@ public:
 		}
 		shaders->load(core, shader_name, "../DX12Engine/Shaders/PlaneVS.hlsl", "../DX12Engine/Shaders/UntexturedPS.hlsl");
 		psos->createPSO(core, pso_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getStaticLayout());
+		psos->createPSO(core, pso_wireframe_name, shaders->find(shader_name)->vs, shaders->find(shader_name)->ps, VertexLayoutCache::getStaticLayout(), true);
 	}
 
-	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, Matrix& world, Matrix& vp) {
+	void draw(DX12Core* core, PSOManager* psos, ShaderManager* shaders, Matrix& world, Matrix& vp, bool showWireframe) {
 		core->beginRenderPass();
 		shaders->apply(core, shader_name);
 		shaders->updateConstantVS(shader_name, "staticMeshBuffer", "W", &world);
 		shaders->updateConstantVS(shader_name, "staticMeshBuffer", "VP", &vp);
-		psos->bind(core, pso_name);
+		
+		if (showWireframe) psos->bind(core, pso_wireframe_name);
+		else psos->bind(core, pso_name);
 
 		for (unsigned int i = 0; i < meshes.size(); i++)
 			meshes[i]->draw(core);
